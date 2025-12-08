@@ -1,9 +1,16 @@
 import mongoose, { Schema } from "mongoose";
 
-
-const genderEnum = {
+export const genderEnum = {
     male:"male",
     female:"female" 
+};
+export const providers = {
+    system:"SYSTEM",
+    google:"GOOGLE" ,
+};
+export const roles = {
+    user:"USER",
+    admin:"ADMIN" ,
 };
 export const userSchema =new Schema({
     first_name:{
@@ -17,8 +24,8 @@ export const userSchema =new Schema({
         type: String,
         required: true,
         trim: true,
-        minLength: [3,"First name must be at least 3 characters"],
-        maxLenghth:[20,"First name must be at most 20 characters"]
+        minLength: [3,"Last name must be at least 3 characters"],
+        maxLength:[20,"Last name must be at most 20 characters"]
     },
     email:{
         type: String,
@@ -29,19 +36,37 @@ export const userSchema =new Schema({
     },
     password:{
         type: String,
-        required: true,
+        required: function(){
+            return this.provider === providers.system ? true : false;
+        }
     },
     gender:{
         type: String,
         enum:{
-            values : Object.values(genderEnum), // convert to array
+            values : Object.values(genderEnum),
             message:"Gender must be male or female"
         }
     },
     phone:{
         type: String,
     },
-    confirm_email: Boolean 
+    confirmEmailOTP: String,
+    confirm_email: { type: Boolean, default: false },
+    photo: String,
+    provider:{
+        type:String,
+        enum:Object.values(providers),
+        message:"Provider must be either System or Google",
+        default: providers.system
+    },
+    role:{
+        type:String,
+        enum:{
+            values:Object.values(roles),
+            message:"Role must be either user or admin",
+        },
+        default:roles.user,  
+    }
 },
 {timestamps:true}
 ); 

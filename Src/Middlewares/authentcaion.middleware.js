@@ -1,0 +1,58 @@
+import { UserModel } from "../DB/Models/user.model.js";
+import { getSignature, verifyToken } from "../Utils/Token/token.utils.js";
+import * as dbSer from "../DB/dbService.js"
+
+export const tokenTypeEnum = {
+    access:"access",
+    refresh:"refresh"
+}
+
+const decodedToken = async({authorization,tokenType = tokenTypeEnum.access,next})=>{
+
+    const [bearer , token] = authorization.split(" ") || [];
+
+    if(!bearer || !token){
+        return next(new Error("Invalid Token",{cause:400}))
+    }
+
+    let signature = await getSignature({
+        signatureLevel:bearer
+    })
+
+    const decoded = verifyToken({
+        token,
+        signature:tokenType === tokenTypeEnum.access 
+        ? signature.accessSignature
+        : signature.refreshSignature,
+    });
+
+    const user = await dbSer.findById({
+        model: UserModel,
+        id: { _id: decoded._id },
+    });
+    if(!user) return next(new Error("User Not Found" , {cause:404}));
+
+
+    return user;
+}
+
+export const authentcation = ({tokenType=tokenTypeEnum.access})=>{
+    return async(req , res ,next)=>{
+        req.user = await decodedToken({
+            authorization: req.headers.authorization  ,
+            tokenType,
+            next,
+        });
+        return next()
+    }
+}
+
+
+export const authoritation =({accessRoles=[] })=>{
+    return async(req,res,next)=>{
+        if(!accessRoles.includes(req.user.role))
+            return next(new Error("Unauthorized",{cause:403}))
+
+        return next()
+    }
+}
