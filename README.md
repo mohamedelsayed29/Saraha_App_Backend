@@ -69,6 +69,8 @@ Saraha (meaning "honesty" in Arabic) is an anonymous messaging application that 
 - **Email Service:** Nodemailer v7.0.11
 - **Unique ID Generation:** nanoid v5.1.6
 - **CORS:** cors v2.8.5
+- **joi**   joi v18.0.2
+
 
 ## Getting Started
 

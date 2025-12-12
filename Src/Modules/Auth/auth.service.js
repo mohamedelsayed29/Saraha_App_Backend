@@ -1,5 +1,5 @@
 import { create, findOne } from "../../DB/dbService.js";
-import { providers, roles, UserModel } from "../../DB/Models/user.model.js";
+import { genderEnum, providers, roles, UserModel } from "../../DB/Models/user.model.js";
 import { encrypt } from "../../Utils/Encryption/encription.utils.js";
 import { compare, hash } from "../../Utils/Hashing/hash.utils.js";
 import { successResponse } from "../../Utils/successResponse.utils.js";
@@ -8,11 +8,10 @@ import { getSignature, signatureEnum, signToken } from "../../Utils/Token/token.
 import { OAuth2Client } from"google-auth-library";
 import * as dbService from "../../DB/dbService.js"
 import { emailEvent } from "../../Utils/Events/events.utils.js";
-import { customAlphabet } from "nanoid";
+import { customAlphabet } from "nanoid"; 
 
 export const signup = async (req, res, next) => { 
   const { first_name, last_name, password, email, gender, phone , role } = req.body;
-
   if (await findOne({ model: UserModel, filter: { email } })) {
     return next(new Error("Email already Exists", { cause: 409 }));
   }
