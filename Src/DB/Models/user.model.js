@@ -27,12 +27,13 @@ export const userSchema =new Schema({
         minLength: [3,"Last name must be at least 3 characters"],
         maxLength:[20,"Last name must be at most 20 characters"]
     },
-    email:{
+    email: {
         type: String,
         required: true,
         trim: true,
         lowercase: true,
         unique: true,
+        match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
     },
     password:{
         type: String,
@@ -50,7 +51,7 @@ export const userSchema =new Schema({
     phone:{
         type: String,
     },
-    confirmEmailOTP: String,
+    confirm_email_otp: String,
     confirm_email: { type: Boolean, default: false },
     photo: String,
     provider:{

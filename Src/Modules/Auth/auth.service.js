@@ -1,5 +1,5 @@
 import { create, findOne } from "../../DB/dbService.js";
-import { genderEnum, providers, roles, UserModel } from "../../DB/Models/user.model.js";
+import { providers, roles, UserModel } from "../../DB/Models/user.model.js";
 import { encrypt } from "../../Utils/Encryption/encription.utils.js";
 import { compare, hash } from "../../Utils/Hashing/hash.utils.js";
 import { successResponse } from "../../Utils/successResponse.utils.js";
@@ -12,17 +12,17 @@ import { customAlphabet } from "nanoid";
 
 export const signup = async (req, res, next) => { 
   const { first_name, last_name, password, email, gender, phone , role } = req.body;
-  if (await findOne({ model: UserModel, filter: { email } })) {
+
+  if (await findOne({ model: UserModel, filter: { email } })) 
     return next(new Error("Email already Exists", { cause: 409 }));
-  }
+
   const hashedPassword = await hash({plainText: password});
   const encryptionPhone = encrypt(phone);
 
-  // Send OTP
-  const otp = customAlphabet("123456789vmbnbn",6)();
+  // Generate OTP
+  const otp = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 6)();
   const hashOtp = await hash({plainText:otp})
-
-emailEvent.emit("confirmEmail",{to:email , otp , first_name });
+  emailEvent.emit("confirmEmail",{to:email , otp , first_name });
 
   const user = await create({
     model: UserModel,
@@ -34,7 +34,7 @@ emailEvent.emit("confirmEmail",{to:email , otp , first_name });
       gender,
       phone:encryptionPhone,
       role,
-      confirmEmailOTP : hashOtp
+      confirm_email_otp : hashOtp
     }],
   });
 
@@ -66,7 +66,7 @@ export const login = async (req, res, next) => {
   });
 
   if (!isMatch) {
-    return next(new Error("Invalied email or password", { cause: 401 }));
+    return next(new Error("Invalid email or password", { cause: 401 }));
   }
 
   let signature = await getSignature({
@@ -80,8 +80,8 @@ export const login = async (req, res, next) => {
       issuer:"Saraha App",
       subject:"Authentcation",
       expiresIn: "1d"
-  }
-})
+    }
+  })
   const refreshToken =  signToken({
     payload:{_id:user._id} ,
     signature:signature.refreshSignature,
@@ -91,11 +91,10 @@ export const login = async (req, res, next) => {
       expiresIn: "7d"
   }})
 
-emailEvent.emit("LoginSuccessfuly", {
-  to: user.email,
-  first_name: user.first_name
-});
-
+  emailEvent.emit("LoginSuccessfuly", {
+    to: user.email,
+    first_name: user.first_name
+  });
 
   return successResponse({  
     res,
@@ -113,7 +112,7 @@ export const confirmEmail = async (req,res,next)=>{
     filter:{
       email,
       confirm_email: false,
-      confirmEmailOTP: { $exists: true }
+      confirm_email_otp: { $exists: true }
     }
   });
 
@@ -123,7 +122,7 @@ export const confirmEmail = async (req,res,next)=>{
 
   const isMatch = await compare({
     plainText: otp,
-    hash: user.confirmEmailOTP
+    hash: user.confirm_email_otp
   });
 
   if(!isMatch){
@@ -135,7 +134,7 @@ export const confirmEmail = async (req,res,next)=>{
     filter:{ email },
     data:{
       confirm_email: true,
-      $unset:{ confirmEmailOTP: true },
+      $unset:{ confirm_email_otp: true },
       $inc:{ __v:1 }
     }
   });
