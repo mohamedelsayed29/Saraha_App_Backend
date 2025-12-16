@@ -20,7 +20,7 @@ export const signup = async (req, res, next) => {
   const encryptionPhone = encrypt(phone);
 
   // Generate OTP
-  const otp = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 6)();
+  const otp = customAlphabet("0123456789", 6)();
   const hashOtp = await hash({plainText:otp})
   emailEvent.emit("confirmEmail",{to:email , otp , first_name });
 

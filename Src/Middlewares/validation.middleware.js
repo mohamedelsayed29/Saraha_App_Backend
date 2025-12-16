@@ -1,4 +1,5 @@
 import joi from "joi";
+import { Types } from "mongoose";
 
 export const generalFields = {
     first_name: joi
@@ -88,7 +89,21 @@ export const generalFields = {
             "string.pattern.base": "Please provide a valid Egyptian phone number",
             "any.required": "Phone number is required"
         }),
-}
+
+    id: joi.string().custom((value,helper)=>{
+        return Types.ObjectId.isValid(value) || helper.message("Invalid ID format");
+    }),
+    otp: joi
+        .string()
+        .length(6)
+        .pattern(/^[0-9]{6}$/)
+        .required()
+        .messages({
+            "string.empty": "OTP is required",
+            "string.length": "OTP must be exactly 6 digits",
+            "string.pattern.base": "OTP must contain only numbers",
+            "any.required": "OTP is required"
+    })}
 
 export const validation = (Schema) => {
     return (req, res, next) => {

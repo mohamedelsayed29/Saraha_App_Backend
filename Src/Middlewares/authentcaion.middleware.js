@@ -1,6 +1,6 @@
 import { UserModel } from "../DB/Models/user.model.js";
 import { getSignature, verifyToken } from "../Utils/Token/token.utils.js";
-import * as dbSer from "../DB/dbService.js"
+import * as dbService from "../DB/dbService.js"
 
 export const tokenTypeEnum = {
     access:"access",
@@ -26,12 +26,11 @@ const decodedToken = async({authorization,tokenType = tokenTypeEnum.access,next}
         : signature.refreshSignature,
     });
 
-    const user = await dbSer.findById({
+    const user = await dbService.findById({
         model: UserModel,
         id: { _id: decoded._id },
     });
     if(!user) return next(new Error("User Not Found" , {cause:404}));
-
 
     return user;
 }
@@ -46,7 +45,6 @@ export const authentcation = ({tokenType=tokenTypeEnum.access})=>{
         return next()
     }
 }
-
 
 export const authoritation =({accessRoles=[] })=>{
     return async(req,res,next)=>{

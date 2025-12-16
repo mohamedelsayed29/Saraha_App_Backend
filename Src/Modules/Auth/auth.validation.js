@@ -12,7 +12,6 @@ export const signUpValidation = {
         phone:generalFields.phone,
         role:generalFields.role
     }).required(),
-
 }
 export const loginValidation = {
     body:joi.object({
@@ -21,5 +20,17 @@ export const loginValidation = {
         password: generalFields.password.required(),
 
     }).required(),
+}
 
+export const socialLoginValidation = {
+    body:joi.object({
+        idToken: joi.string().required()
+    }).required(),
+}
+
+export const confirmEmailValidation = {
+    body:joi.object({
+        email: generalFields.email.required(),
+        otp:generalFields.otp.required()
+    }).required(),
 }
