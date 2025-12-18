@@ -93,6 +93,18 @@ export const generalFields = {
     id: joi.string().custom((value,helper)=>{
         return Types.ObjectId.isValid(value) || helper.message("Invalid ID format");
     }),
+    age: joi
+        .number()
+        .integer()
+        .min(13)
+        .max(120)
+        .messages({
+            "number.base": "Age must be a number",
+            "number.integer": "Age must be a whole number",
+            "number.min": "You must be at least 13 years old",
+            "number.max": "Please enter a valid age",
+            "any.required": "Age is required"
+    }),
     otp: joi
         .string()
         .length(6)
