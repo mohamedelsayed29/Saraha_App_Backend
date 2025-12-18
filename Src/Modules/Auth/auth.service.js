@@ -3,7 +3,6 @@ import { providers, roles, UserModel } from "../../DB/Models/user.model.js";
 import { encrypt } from "../../Utils/Encryption/encription.utils.js";
 import { compare, hash } from "../../Utils/Hashing/hash.utils.js";
 import { successResponse } from "../../Utils/successResponse.utils.js";
-// import { asyncHandler }from "../../Utils/asynchandler.js";
 import { getSignature, signatureEnum, signToken } from "../../Utils/Token/token.utils.js";
 import { OAuth2Client } from"google-auth-library";
 import * as dbService from "../../DB/dbService.js"
@@ -22,6 +21,7 @@ export const signup = async (req, res, next) => {
   // Generate OTP
   const otp = customAlphabet("0123456789", 6)();
   const hashOtp = await hash({plainText:otp})
+  const otp_expired_at = new Date(Date.now()+2 * 60 * 1000); // 2 minutes
   emailEvent.emit("confirmEmail",{to:email , otp , first_name });
 
   const user = await create({
@@ -34,9 +34,12 @@ export const signup = async (req, res, next) => {
       gender,
       phone:encryptionPhone,
       role,
-      confirm_email_otp : hashOtp
+      confirm_email_otp : hashOtp,
+      otp_expired_at
     }],
   });
+  user.field_attempts = 0;
+  user.lock_until = null;
 
   return successResponse({
     res,
@@ -114,11 +117,38 @@ export const confirmEmail = async (req,res,next)=>{
       confirm_email: false,
       confirm_email_otp: { $exists: true }
     }
-  });
+  }); 
 
   if(!user){
     return next(new Error("User Not Found Or Email Already Confirmed",{ cause:401 }));
   }
+
+  if(user.lock_until && user.lock_until > Date.now()){
+    return next(new Error("Account is locked. Please try again later",{ cause:403 }));
+  }
+
+  if(!user.confirm_email_otp || user.otp_expired_at < Date.now()){
+    return next(new Error("OTP has expired. Please request a new one.",{ cause:400 }));
+  }
+  if(user.field_attempts >= 5){
+    await dbService.updateOne({
+      model: UserModel,
+      filter:{ email },
+      data:{
+        lock_until: new Date(Date.now() + 15 * 60 * 1000), // Lock for 15 minutes
+        field_attempts:0
+      }
+    });
+    return next(new Error("Too many invalid attempts. Account is locked for 15 minutes.",{ cause:403 }));
+  }
+
+  await dbService.updateOne({
+    model: UserModel,
+    filter:{ email },
+    data:{
+      $inc:{ field_attempts: 1 }
+    }
+  });
 
   const isMatch = await compare({
     plainText: otp,
@@ -134,7 +164,7 @@ export const confirmEmail = async (req,res,next)=>{
     filter:{ email },
     data:{
       confirm_email: true,
-      $unset:{ confirm_email_otp: true },
+      $unset:{ confirm_email_otp: true , otp_expired_at: 0 , field_attempts: 0 , lock_until: 0  },
       $inc:{ __v:1 }
     }
   });

@@ -23,7 +23,7 @@ export async function sendEmail({to="", subject="saraha application", text="", h
     });
 
     console.log("Message sent:", info.messageId);
-}
+};
 
 export const emailSubject = {
     confirmEmail: "Confirm Your Email",

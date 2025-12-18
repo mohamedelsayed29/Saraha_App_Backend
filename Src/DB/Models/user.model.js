@@ -51,8 +51,17 @@ export const userSchema =new Schema({
     phone:{
         type: String,
     },
+    
     confirm_email_otp: String,
+
+    otp_expired_at:{ type: Date , default: Date.now() },
+
+    field_attempts: { type: Number, default: 0 },
+
+    lock_until: { type: Date , default: null },
+
     confirm_email: { type: Boolean, default: false },
+
     photo: String,
     provider:{
         type:String,
