@@ -50,7 +50,7 @@ export const generalFields = {
         .messages({
             "string.empty": "Password is required",
             "string.pattern.base": 
-                "Password must be at least 8 characters and contain: uppercase, lowercase, number, and special character (@$!%*?&#)",
+            "Password must be at least 8 characters and contain: uppercase, lowercase, number, and special character (@$!%*?&#)",
             "any.required": "Password is required"
         }),
 

@@ -16,3 +16,24 @@ export const updateProfileValidation ={
         gender:generalFields.gender
     })
 }
+
+export const freezeAccountValidation ={
+    params:joi.object({
+        userId:generalFields.id
+    })
+}
+export const restoreFreezeAccountAdminValidation ={
+    params:joi.object({
+        userId:generalFields.id.required()
+    })
+}
+export const restoreFreezeAccountUserValidation ={
+    params:joi.object({
+        userId:generalFields.id
+    })
+}
+export const hardDeleteAccountValidation ={
+    params:joi.object({
+        userId:generalFields.id
+    })
+}

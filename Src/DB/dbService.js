@@ -46,3 +46,17 @@ export const findOneAndUpdate = async ({
     .select(select)
     .populate(populate);
 };
+
+export const deleteMany = async({
+    model,
+    filter = {},
+}={})=>{
+    return await model.deleteMany(filter);
+};
+
+export const deleteOne = async ({
+    model, 
+    filter = {},
+} = {}) => {
+    return await model.deleteOne(filter);
+}

@@ -1,14 +1,15 @@
 import { Router } from "express";
 import * as userService from "./user.service.js"
-import { authentcation, authoritation, tokenTypeEnum } from "../../Middlewares/authentcaion.middleware.js";
+import { authentication, authorization, tokenTypeEnum } from "../../Middlewares/authentcaion.middleware.js";
 import { endpoints } from "./user.authorization.js";
 import { validation } from "../../Middlewares/validation.middleware.js";
-import { shareProfileValidation, updateProfileValidation } from "./user.validation.js";
+import { freezeAccountValidation, hardDeleteAccountValidation, restoreFreezeAccountAdminValidation, restoreFreezeAccountUserValidation, shareProfileValidation, updateProfileValidation } from "./user.validation.js";
+import { auth } from "google-auth-library";
 
 const router = Router();
 router.get('/get-user-profile',
-    authentcation({tokenType:tokenTypeEnum.access}),
-    authoritation({accessRoles:endpoints.getProfile}),
+    authentication({tokenType:tokenTypeEnum.access}),
+    authorization({accessRoles:endpoints.getProfile}),
     userService.getUserProfile
 );
 router.get('/share-profile/:userId',
@@ -17,9 +18,32 @@ router.get('/share-profile/:userId',
 );
 router.patch('/update-profile',
     validation(updateProfileValidation),
-    authentcation({tokenType:tokenTypeEnum.access}),
-    authoritation({accessRoles:endpoints.updateProfile}),
+    authentication({tokenType:tokenTypeEnum.access}),
+    authorization({accessRoles:endpoints.updateProfile}),
     userService.updateProfile
 );
-
+router.delete('/freeze-account/{:userId}',
+    validation(freezeAccountValidation),
+    authentication({tokenType:tokenTypeEnum.access}),
+    authorization({accessRoles:endpoints.freezeAccount}),
+    userService.freezeAccount
+)
+router.patch('/restore-account/:userId',
+    validation(restoreFreezeAccountAdminValidation),
+    authentication({tokenType:tokenTypeEnum.access}),
+    authorization({accessRoles:endpoints.restoreAccountByAdmin}),
+    userService.restoreAccountByAdmin
+);
+router.patch('/restore-account-by-user',
+    validation(restoreFreezeAccountUserValidation),
+    authentication({tokenType:tokenTypeEnum.access}),
+    authorization({accessRoles:endpoints.restoreAccountByUser}),
+    userService.restoreAccountByUser
+);
+router.delete('/delete-account/:userId',
+    validation(hardDeleteAccountValidation),
+    authentication({tokenType:tokenTypeEnum.access}),
+    authorization({accessRoles:endpoints.deleteAccount}),
+    userService.deleteAccount
+);
 export default router; 

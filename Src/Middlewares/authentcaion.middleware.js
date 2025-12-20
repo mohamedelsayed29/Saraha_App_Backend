@@ -35,7 +35,7 @@ const decodedToken = async({authorization,tokenType = tokenTypeEnum.access,next}
     return user;
 }
 
-export const authentcation = ({tokenType=tokenTypeEnum.access})=>{
+export const authentication = ({tokenType=tokenTypeEnum.access})=>{
     return async(req , res ,next)=>{
         req.user = await decodedToken({
             authorization: req.headers.authorization  ,
@@ -46,7 +46,7 @@ export const authentcation = ({tokenType=tokenTypeEnum.access})=>{
     }
 }
 
-export const authoritation =({accessRoles=[] })=>{
+export const authorization =({accessRoles=[] })=>{
     return async(req,res,next)=>{
         if(!accessRoles.includes(req.user.role))
             return next(new Error("Unauthorized",{cause:403}))

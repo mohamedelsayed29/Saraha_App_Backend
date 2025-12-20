@@ -76,7 +76,13 @@ export const userSchema =new Schema({
             message:"Role must be either user or admin",
         },
         default:roles.user,  
-    }
+    },
+    freezed_at: { type: Date, default: null },
+    freezed_by:{type:mongoose.Schema.Types.ObjectId , ref:"User"},
+
+    restored_at: { type: Date, default: null },
+    restored_by:{type:mongoose.Schema.Types.ObjectId , ref:"User"}
+
 },
 {timestamps:true}
 ); 

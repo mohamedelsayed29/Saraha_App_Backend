@@ -1,7 +1,7 @@
 import { decrypt, encrypt } from "../../Utils/Encryption/encription.utils.js";
 import { successResponse } from "../../Utils/successResponse.utils.js";
 import * as dbService from "../../DB/dbService.js"
-import { UserModel } from "../../DB/Models/user.model.js";
+import { roles, UserModel } from "../../DB/Models/user.model.js";
 
 export const getUserProfile = async(req ,res , next)=>{
 
@@ -49,3 +49,120 @@ export const updateProfile = async(req,res,next)=>{
     })
     : next(new Error("Invalid Update",{cause:404}))
 };
+
+export const freezeAccount = async(req, res, next) => {
+    const { userId } = req.params;
+    
+    if (userId && req.user.role !== roles.admin) {
+        return next(new Error("Unauthorized", { cause: 403 }));
+    }
+    
+    const updatedUser = await dbService.findOneAndUpdate({
+        model: UserModel,
+        filter: {
+            _id: userId || req.user._id,
+            $or: [
+                { freezed_at: null },
+                { freezed_at: { $exists: false } }
+            ]
+        },
+        data: {
+            freezed_at: Date.now(),
+            freezed_by: req.user._id,
+            $unset: {
+                restored_at: 1,
+                restored_by: 1
+            }
+        },
+        options: { new: true }
+    });
+    
+    return updatedUser 
+        ? successResponse({
+            res,
+            statusCode: 200,
+            message: "User Account Frozen Successfully",
+            data: { updatedUser }
+        })
+        : next(new Error("User not found or already frozen", { cause: 404 }));
+};
+
+export const restoreAccountByAdmin = async(req, res, next) => {
+    const { userId } = req.params;
+    if (req.user.role !== roles.admin) {
+        return next(new Error("Unauthorized. Only admins can restore accounts.", { cause: 403 }));
+    }
+    const updatedUser = await dbService.findOneAndUpdate({
+        model: UserModel,
+        filter: {
+            _id: userId,
+            freezed_at: { $exists: true },
+            freezed_by: { $ne: userId }
+        },
+        data: {
+            restored_at: Date.now(),
+            restored_by: req.user._id,
+            $unset: {
+                freezed_at: 1,
+                freezed_by: 1
+            }
+        },
+        options: { new: true }
+    });
+    
+    return updatedUser 
+        ? successResponse({
+            res,
+            statusCode: 200,
+            message: "User Account Restored Successfully",
+            data: { updatedUser }
+        })
+        : next(new Error("User not found or not frozen", { cause: 404 }));
+};
+
+export const restoreAccountByUser = async(req,res,next)=>{
+    const updateUser = await dbService.findOneAndUpdate({
+        model:UserModel,
+        filter:{
+            _id:req.user._id,
+            freezed_at:{$exists:true},
+            freezed_by:{$ne:req.user._id}
+        },
+        data:{
+            restored_at:Date.now(),
+            restored_by:req.user._id,
+            $unset:{
+                freezed_at:1,
+                freezed_by:1
+            }
+        },
+        options:{new:true}
+    });
+
+    return updateUser ? successResponse({
+        res,
+        statusCode:200,
+        message:"User Account Restored Successfully",
+        data:{updateUser}
+    })
+    : next (new Error("User not found or not frozen",{cause:404}))
+}
+
+export const deleteAccount = async(req,res,next)=>{
+    const { userId } = req.params;
+
+    const deleteUser = await dbService.deleteOne({
+        model:UserModel,
+        filter:{
+            _id:userId,
+            freezed_at: { $exists: true },
+        }
+    })
+
+    return deleteUser.deletedCount ? successResponse({
+        res,
+        statusCode:200,
+        message:"User Account Deleted Successfully",
+    })
+    : next(new Error("User not found or account is not frozen",{cause:404}))
+}
