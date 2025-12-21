@@ -2,6 +2,8 @@ import { decrypt, encrypt } from "../../Utils/Encryption/encription.utils.js";
 import { successResponse } from "../../Utils/successResponse.utils.js";
 import * as dbService from "../../DB/dbService.js"
 import { roles, UserModel } from "../../DB/Models/user.model.js";
+import { compare } from "../../Utils/Hashing/hash.utils.js";
+import { hash } from "../../Utils/Hashing/hash.utils.js";
 
 export const getUserProfile = async(req ,res , next)=>{
 
@@ -10,7 +12,7 @@ export const getUserProfile = async(req ,res , next)=>{
     return successResponse({res , statusCode:200 ,
         message:"User profile fetched successfully" , 
         data:{user:req.user}})
-} 
+};
 
 export const shareProfile = async(req,res,next)=>{
     const {userId} = req.params;
@@ -146,7 +148,7 @@ export const restoreAccountByUser = async(req,res,next)=>{
         data:{updateUser}
     })
     : next (new Error("User not found or not frozen",{cause:404}))
-}
+};
 
 export const deleteAccount = async(req,res,next)=>{
     const { userId } = req.params;
@@ -165,4 +167,26 @@ export const deleteAccount = async(req,res,next)=>{
         message:"User Account Deleted Successfully",
     })
     : next(new Error("User not found or account is not frozen",{cause:404}))
-}
+}; // Hard delete account function
+
+export const updatePassword = async(req,res,next)=>{
+    const { old_password, password } = req.body;
+
+    if(!await compare({plainText:old_password,hash:req.user.password}))
+        return next (new Error("Old Password is incorrect",{cause:400}));
+
+    const user = await dbService.findOneAndUpdate({
+        model:UserModel,
+        filter:{_id:req.user._id},
+        data:{
+            password:await hash({plainText:password})
+        }
+    })
+
+    return user ? successResponse({
+        res,
+        statusCode:200,
+        message:"Password updated successfully",
+    })
+    : next(new Error("Failed to update password",{cause:400}))
+};

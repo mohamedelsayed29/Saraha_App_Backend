@@ -6,6 +6,7 @@ export const endpoints = {
     freezeAccount : [roles.admin,roles.user],
     restoreAccountByAdmin : [roles.admin],
     restoreAccountByUser : [roles.user],
-    deleteAccount: [roles.admin]
+    deleteAccount: [roles.admin],
+    updatePassword: [roles.admin, roles.user]
 
 } 

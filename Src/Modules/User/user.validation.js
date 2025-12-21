@@ -6,7 +6,6 @@ export const shareProfileValidation ={
         userId:generalFields.id.required()
     })
 }
-
 export const updateProfileValidation ={
     body:joi.object({
         first_name:generalFields.first_name,
@@ -16,7 +15,6 @@ export const updateProfileValidation ={
         gender:generalFields.gender
     })
 }
-
 export const freezeAccountValidation ={
     params:joi.object({
         userId:generalFields.id
@@ -35,5 +33,12 @@ export const restoreFreezeAccountUserValidation ={
 export const hardDeleteAccountValidation ={
     params:joi.object({
         userId:generalFields.id
+    })
+};
+export const updatePasswordValidation ={
+    body:joi.object({
+        old_password:generalFields.password.required(),
+        password:generalFields.password.not(joi.ref("old_password")),
+        confirm_password:generalFields.confirm_password.required()
     })
 }

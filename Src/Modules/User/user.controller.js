@@ -3,7 +3,15 @@ import * as userService from "./user.service.js"
 import { authentication, authorization, tokenTypeEnum } from "../../Middlewares/authentcaion.middleware.js";
 import { endpoints } from "./user.authorization.js";
 import { validation } from "../../Middlewares/validation.middleware.js";
-import { freezeAccountValidation, hardDeleteAccountValidation, restoreFreezeAccountAdminValidation, restoreFreezeAccountUserValidation, shareProfileValidation, updateProfileValidation } from "./user.validation.js";
+import { 
+    freezeAccountValidation,
+    hardDeleteAccountValidation,
+    restoreFreezeAccountAdminValidation,
+    restoreFreezeAccountUserValidation,
+    shareProfileValidation,
+    updatePasswordValidation,
+    updateProfileValidation
+} from "./user.validation.js";
 import { auth } from "google-auth-library";
 
 const router = Router();
@@ -46,4 +54,10 @@ router.delete('/delete-account/:userId',
     authorization({accessRoles:endpoints.deleteAccount}),
     userService.deleteAccount
 );
-export default router; 
+router.patch('/update-password',
+    validation(updatePasswordValidation),
+    authentication({tokenType:tokenTypeEnum.access}),
+    authorization({accessRoles:endpoints.updatePassword}),
+    userService.updatePassword
+);
+export default router;
