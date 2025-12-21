@@ -2,7 +2,14 @@ import { Router } from "express";
 import * as authService from "./auth.service.js";
 import { authentication, tokenTypeEnum } from "../../Middlewares/authentcaion.middleware.js";
 import { validation } from "../../Middlewares/validation.middleware.js";
-import { confirmEmailValidation, loginValidation, signUpValidation, socialLoginValidation } from "./auth.validation.js";
+import { 
+    confirmEmailValidation,
+    forgetPasswordValidation,
+    loginValidation,
+    resetPasswordValidation,
+    signUpValidation,
+    socialLoginValidation
+} from "./auth.validation.js";
 
 const router = Router();
 
@@ -11,4 +18,7 @@ router.post('/login',validation(loginValidation),authService.login);
 router.post('/social-login',validation(socialLoginValidation),authService.loginWithGamil);
 router.get('/refresh-token',authentication({tokenType:tokenTypeEnum.refresh }),authService.refreshToken);
 router.patch('/confirm-email',validation(confirmEmailValidation),authService.confirmEmail);
+router.patch('/forget-password',validation(forgetPasswordValidation),authService.forgetPassword);
+router.patch('/reset-password',validation(resetPasswordValidation),authService.resetPassword);
+
 export default router;

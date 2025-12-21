@@ -23,3 +23,12 @@ emailEvent.on("LoginSuccessfuly", async (data) => {
         html: login_successfuly_template(data.first_name),
     });
 });
+
+emailEvent.on("forgetPassword", async (data) => {
+    await sendEmail({
+        to: data.to,
+        subject: emailSubject.resetPassword,
+        text: `Welcome back ${data.first_name}`,
+        html: template(data.otp,data.first_name,emailSubject.resetPassword),
+    });
+});

@@ -21,7 +21,7 @@ export const signup = async (req, res, next) => {
   // Generate OTP
   const otp = customAlphabet("0123456789", 6)();
   const hashOtp = await hash({plainText:otp})
-  const otp_expired_at = new Date(Date.now()+2 * 60 * 1000); // 2 minutes
+  const otp_expired_at = new Date(Date.now()+2 * 60 * 1000);
   emailEvent.emit("confirmEmail",{to:email , otp , first_name });
 
   const user = await create({
@@ -186,7 +186,7 @@ async function verifyGoogleAccount({idToken}){
     const payload = ticket.getPayload();
 
     return payload;
-}
+};
 
 export const loginWithGamil = async (req, res, next) => {
   const { idToken } = req.body;
@@ -292,4 +292,77 @@ export const refreshToken = async(req,res,next)=>{
     message: "New Credentials Created Successfully",
     data: {accessToken , refreshToken},
   });
-} 
+};
+
+export const forgetPassword = async(req,res,next)=>{
+  const { email } = req.body;
+  const otp = await customAlphabet("0123456789", 6)();
+  const hashOtp = await hash({plainText:otp})
+  const otp_expired_at = new Date(Date.now()+2 * 60 * 1000);
+
+  const user = await dbService.findOneAndUpdate({
+    model:UserModel,
+    filter:{ 
+      email,
+      provider: providers.system,
+      confirm_email:{$exists:true},
+      freezed_at:null
+    },
+    data:{forget_password_otp:hashOtp,otp_expired_at}
+  });
+  if(!user){
+    return next (new Error("User Not Found",{ cause:404 }));
+  }
+  emailEvent.emit("forgetPassword",{to:email , otp , first_name:user.first_name });
+
+  return successResponse({
+    res,
+    statusCode:200,
+    message:"OTP sent to your email successfully"
+  })
+
+};
+
+export const resetPassword = async(req,res,next)=>{
+  const { email , otp , password}  = req.body;
+
+  const user = await dbService.findOne({
+    model: UserModel,
+    filter:{
+      email,
+      provider: providers.system,
+      confirm_email:{$exists:true},
+      freezed_at:null,
+      forget_password_otp: { $exists: true }
+    }
+  });
+  if(!user){
+    return next(new Error("User Not Found",{ cause:404 }));
+  }
+
+  if(!await compare({ plainText: otp , hash: user.forget_password_otp })){
+    return next (new Error("Invalid OTP",{ cause:400 }));
+  }
+
+  if(user.otp_expired_at < Date.now()){
+    return next (new Error("OTP has expired. Please request a new one.",{ cause:400 }));
+  }
+
+  const hashedPassword = await hash({plainText: password});
+
+  await dbService.updateOne({
+    model: UserModel,
+    filter:{ email },
+    data:{
+      password:hashedPassword,
+      $unset:{ forget_password_otp: "" , otp_expired_at: "" },
+      inc:{ __v:1 }
+    }
+  });
+
+  return successResponse({
+    res,
+    statusCode:200,
+    message:"Password Reset Successfully"
+  });
+};

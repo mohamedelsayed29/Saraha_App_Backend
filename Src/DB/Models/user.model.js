@@ -54,6 +54,8 @@ export const userSchema =new Schema({
     
     confirm_email_otp: String,
 
+    forget_password_otp: String,
+
     otp_expired_at:{ type: Date , default: Date.now() },
 
     field_attempts: { type: Number, default: 0 },
