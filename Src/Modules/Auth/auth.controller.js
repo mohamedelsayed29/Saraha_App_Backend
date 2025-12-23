@@ -14,11 +14,19 @@ import {
 const router = Router();
 
 router.post('/signup',validation(signUpValidation),authService.signup);
+
 router.post('/login',validation(loginValidation),authService.login);
+
+router.post('/logout',authentication({tokenType:tokenTypeEnum.access }),authService.logout);
+
 router.post('/social-login',validation(socialLoginValidation),authService.loginWithGamil);
+
 router.get('/refresh-token',authentication({tokenType:tokenTypeEnum.refresh }),authService.refreshToken);
+
 router.patch('/confirm-email',validation(confirmEmailValidation),authService.confirmEmail);
+
 router.patch('/forget-password',validation(forgetPasswordValidation),authService.forgetPassword);
+
 router.patch('/reset-password',validation(resetPasswordValidation),authService.resetPassword);
 
 export default router;

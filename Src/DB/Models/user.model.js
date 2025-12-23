@@ -49,7 +49,7 @@ export const userSchema =new Schema({
         }
     },
     phone:{
-        type: String,
+        type: String
     },
     
     confirm_email_otp: String,

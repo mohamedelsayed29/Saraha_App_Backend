@@ -1,13 +1,14 @@
 import { create, findOne } from "../../DB/dbService.js";
-import { providers, roles, UserModel } from "../../DB/Models/user.model.js";
+import { providers, UserModel } from "../../DB/Models/user.model.js";
 import { encrypt } from "../../Utils/Encryption/encription.utils.js";
 import { compare, hash } from "../../Utils/Hashing/hash.utils.js";
 import { successResponse } from "../../Utils/successResponse.utils.js";
-import { getSignature, signatureEnum, signToken } from "../../Utils/Token/token.utils.js";
+import { getNewLoginCredentials, } from "../../Utils/Token/token.utils.js";
 import { OAuth2Client } from"google-auth-library";
 import * as dbService from "../../DB/dbService.js"
 import { emailEvent } from "../../Utils/Events/events.utils.js";
 import { customAlphabet } from "nanoid"; 
+import { TokenModel } from "../../DB/Models/token.model.js";
 
 export const signup = async (req, res, next) => { 
   const { first_name, last_name, password, email, gender, phone , role } = req.body;
@@ -20,7 +21,7 @@ export const signup = async (req, res, next) => {
 
   // Generate OTP
   const otp = customAlphabet("0123456789", 6)();
-  const hashOtp = await hash({plainText:otp})
+  const hashOtp = await hash({plainText:otp});
   const otp_expired_at = new Date(Date.now()+2 * 60 * 1000);
   emailEvent.emit("confirmEmail",{to:email , otp , first_name });
 
@@ -49,7 +50,7 @@ export const signup = async (req, res, next) => {
   });
 };
 
-export const login = async (req, res, next) => {
+export const login = async (req, res, next) => { 
 
   const { password, email } = req.body;
 
@@ -71,41 +72,40 @@ export const login = async (req, res, next) => {
   if (!isMatch) {
     return next(new Error("Invalid email or password", { cause: 401 }));
   }
+  
 
-  let signature = await getSignature({
-    signatureLevel:user.role != roles.user ? signatureEnum.admin : signatureEnum.user
-  })
+  const newCredentials = await getNewLoginCredentials(user)
 
-  const accessToken = signToken({
-    payload:{_id:user._id} ,
-    signature:signature.accessSignature,
-    options:{
-      issuer:"Saraha App",
-      subject:"Authentcation",
-      expiresIn: "1d"
-    }
-  })
-  const refreshToken =  signToken({
-    payload:{_id:user._id} ,
-    signature:signature.refreshSignature,
-    options:{
-      issuer:"Saraha App",
-      subject:"Authentcation",
-      expiresIn: "7d"
-  }})
-
-  emailEvent.emit("LoginSuccessfuly", {
-    to: user.email,
-    first_name: user.first_name
-  });
+  // emailEvent.emit("LoginSuccessfuly", {
+  //   to: user.email,
+  //   first_name: user.first_name
+  // });
 
   return successResponse({  
     res,
     statusCode: 200,
     message: "Login successfully",
-    data: {accessToken , refreshToken},
+    data: {newCredentials},
   });
 };
+
+export const logout = async (req , res , next)=>{
+  await dbService.create({
+    model:TokenModel,
+    data : [{
+        jti:req.decoded.jti,
+        userId : req.user._id,
+        expireIn: Date.now() - req.decoded.exp
+        
+    }],
+  
+  });
+  return successResponse({  
+    res,
+    statusCode: 201,
+    message: "Logout successfully",
+  });
+}
 
 export const confirmEmail = async (req,res,next)=>{
   const { email , otp } = req.body;
@@ -201,27 +201,13 @@ export const loginWithGamil = async (req, res, next) => {
 
   if (user) {
     if (user.provider === providers.google) {
-      const accessToken = signToken({
-        payload: { _id: user._id },
-        options: {
-          issuer: "Saraha App",
-          subject: "Authentcation",
-          expiresIn: "1d",
-        },
-      });
-      const refreshToken = signToken({
-        payload: { _id: user._id },
-        options: {
-          issuer: "Saraha App",
-          subject: "Authentcation",
-          expiresIn: "7d",
-        },
-      });
+        const newCredentials = await getNewLoginCredentials(user)
+
       return successResponse({
         res,
         statusCode: 200,
         message: "Login successfully",
-        data: { accessToken, refreshToken },
+        data: { newCredentials },
       });
     }
   }
@@ -239,58 +225,26 @@ export const loginWithGamil = async (req, res, next) => {
       },
     ],
   });
-  const accessToken = signToken({
-    payload: { _id: newUser._id },
-    options: {
-      issuer: "Saraha App",
-      subject: "Authentcation",
-      expiresIn: "1d",
-    },
-  });
-  const refreshToken = signToken({
-    payload: { _id: newUser._id },
-    options: {
-      issuer: "Saraha App",
-      subject: "Authentcation",
-      expiresIn: "7d",
-    },
-  });
+      const newCredentials = await getNewLoginCredentials(user)
+
   return successResponse({
     res,
     statusCode: 201,
     message: "User Created successfully",
-    data: { accessToken, refreshToken },
+    data: {newCredentials},
   });
 };
 
 export const refreshToken = async(req,res,next)=>{
   const user = req.user;
-  let signature = await getSignature({
-    signatureLevel: user.role != roles.user ? signatureEnum.admin : signatureEnum.user
-  })
 
-    const accessToken = signToken({
-    payload:{_id:user._id} ,
-    signature:signature.accessSignature,
-    options:{
-      issuer:"Saraha App",
-      subject:"Authentcation",
-      expiresIn: "1d"
-  }
-})
-  const refreshToken =  signToken({
-    payload:{_id:user._id} ,
-    signature:signature.refreshSignature,
-    options:{
-      issuer:"Saraha App",
-      subject:"Authentcation",
-      expiresIn: "7d"
-  }})
+  const newCredentials = await getNewLoginCredentials(user)
+
   return successResponse({  
     res,
     statusCode: 201,
     message: "New Credentials Created Successfully",
-    data: {accessToken , refreshToken},
+    data: {newCredentials},
   });
 };
 

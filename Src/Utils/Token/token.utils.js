@@ -1,4 +1,6 @@
 import jwt from "jsonwebtoken"
+import { roles } from "../../DB/Models/user.model.js";
+import { nanoid } from "nanoid";
 
 export const signatureEnum = {
     admin:"Admin",
@@ -33,3 +35,33 @@ export const getSignature = async({ signatureLevel = signatureEnum.user }) => {
 
     return signature;
 };
+
+export const getNewLoginCredentials = async (user) =>{
+    let signature = await getSignature({
+        signatureLevel: user.role != roles.user ? signatureEnum.admin : signatureEnum.user
+    });
+
+    // Generate Jti
+    const jwtid = nanoid()
+
+    const accessToken = signToken({
+        payload:{_id:user._id} ,
+        signature:signature.accessSignature,
+        options:{
+            issuer:"Saraha App",
+            subject:"Authentcation",
+            expiresIn: "1d",
+            jwtid
+        }
+    })
+    const refreshToken =  signToken({
+        payload:{_id:user._id} ,
+        signature:signature.refreshSignature,
+        options:{
+        issuer:"Saraha App",
+        subject:"Authentcation",
+        expiresIn: "7d",
+        jwtid
+    }})
+    return {accessToken,refreshToken}
+}

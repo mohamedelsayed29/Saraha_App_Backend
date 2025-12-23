@@ -1,7 +1,7 @@
 import { UserModel } from "../DB/Models/user.model.js";
 import { getSignature, verifyToken } from "../Utils/Token/token.utils.js";
 import * as dbService from "../DB/dbService.js"
-
+import { TokenModel } from "../DB/Models/token.model.js";
 export const tokenTypeEnum = {
     access:"access",
     refresh:"refresh"
@@ -26,22 +26,34 @@ const decodedToken = async({authorization,tokenType = tokenTypeEnum.access,next}
         : signature.refreshSignature,
     });
 
+    if(decoded.jti &&
+        (await dbService.findOne({
+        model:TokenModel,
+        filter:{
+            jti: decoded.jti,
+        }
+    }) )){
+        return next (new Error("Token Revoked" , {cause:401}))
+    }
+
     const user = await dbService.findById({
         model: UserModel,
         id: { _id: decoded._id },
     });
     if(!user) return next(new Error("User Not Found" , {cause:404}));
 
-    return user;
+    return { user , decoded};
 }
 
 export const authentication = ({tokenType=tokenTypeEnum.access})=>{
     return async(req , res ,next)=>{
-        req.user = await decodedToken({
+        const { user, decoded } = await decodedToken({
             authorization: req.headers.authorization  ,
             tokenType,
             next,
-        });
+        }) || {};
+        req.user = user;
+        req.decoded = decoded;
         return next()
     }
 }

@@ -16,7 +16,7 @@ const bootstrap = async (app,express) =>{
     app.use('/api/messages',messageRouter)
 
     app.all('/*dummy' , (req,res,next)=>{
-        return next(new Error("Invalied Route",{cause:404}))
+        return next(new Error("Invalid Route",{cause:404}))
     })
 
     app.use(globalErrorHandler)
