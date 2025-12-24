@@ -2,6 +2,7 @@ import { UserModel } from "../DB/Models/user.model.js";
 import { getSignature, verifyToken } from "../Utils/Token/token.utils.js";
 import * as dbService from "../DB/dbService.js"
 import { TokenModel } from "../DB/Models/token.model.js";
+
 export const tokenTypeEnum = {
     access:"access",
     refresh:"refresh"
@@ -42,6 +43,9 @@ const decodedToken = async({authorization,tokenType = tokenTypeEnum.access,next}
     });
     if(!user) return next(new Error("User Not Found" , {cause:404}));
 
+    if(user.changeCredentialsTime?.getTime() > decoded.iat * 1000){
+        return next (new Error("Credentials Changed, Please Login Again" , {cause:401}))
+    }
     return { user , decoded};
 }
 

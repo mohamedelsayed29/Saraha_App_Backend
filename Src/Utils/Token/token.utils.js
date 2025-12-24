@@ -7,6 +7,12 @@ export const signatureEnum = {
     user:"User"
 };
 
+export const logoutEnum = {
+    allDevices:"allDevices",
+    logout  :"logout",
+    stayloggedIn:"stayloggedIn"
+};
+
 export const signToken = ({payload = {} , signature , options = {expiresIn :"1d"}})=>{
     return jwt.sign(payload,signature,options)
 }
@@ -64,4 +70,4 @@ export const getNewLoginCredentials = async (user) =>{
         jwtid
     }})
     return {accessToken,refreshToken}
-}
+};

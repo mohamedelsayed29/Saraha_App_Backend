@@ -8,5 +8,4 @@ export const endpoints = {
     restoreAccountByUser : [roles.user],
     deleteAccount: [roles.admin],
     updatePassword: [roles.admin, roles.user]
-
 } 

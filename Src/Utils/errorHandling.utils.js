@@ -5,4 +5,4 @@ export const globalErrorHandler = (err,req,res,next)=>{
             error:err.message,
             stack:err.stack
         });
-}
+};

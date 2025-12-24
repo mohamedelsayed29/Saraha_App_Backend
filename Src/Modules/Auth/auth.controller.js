@@ -6,6 +6,7 @@ import {
     confirmEmailValidation,
     forgetPasswordValidation,
     loginValidation,
+    logoutValidation,
     resetPasswordValidation,
     signUpValidation,
     socialLoginValidation
@@ -17,7 +18,7 @@ router.post('/signup',validation(signUpValidation),authService.signup);
 
 router.post('/login',validation(loginValidation),authService.login);
 
-router.post('/logout',authentication({tokenType:tokenTypeEnum.access }),authService.logout);
+router.post('/logout',validation(logoutValidation),authentication({tokenType:tokenTypeEnum.access }),authService.logout);
 
 router.post('/social-login',validation(socialLoginValidation),authService.loginWithGamil);
 

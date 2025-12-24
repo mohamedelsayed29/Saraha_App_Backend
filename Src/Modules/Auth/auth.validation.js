@@ -1,5 +1,6 @@
 import joi from "joi";
 import { generalFields } from "../../Middlewares/validation.middleware.js";
+import { logoutEnum } from "../../Utils/Token/token.utils.js";
 
 export const signUpValidation = {
     body:joi.object({
@@ -13,12 +14,11 @@ export const signUpValidation = {
         role:generalFields.role
     }).required(),
 };
+
 export const loginValidation = {
     body:joi.object({
-
         email: generalFields.email.required(),
         password: generalFields.password.required(),
-
     }).required(),
 };
 
@@ -49,4 +49,11 @@ export const resetPasswordValidation = {
         password: generalFields.password.required(),
         confirm_password:generalFields.confirm_password
     })
-}
+};
+
+export const logoutValidation = {
+    body:joi.object({
+        flag: joi.string().valid(...Object.values(logoutEnum)).default(logoutEnum.stayloggedIn)
+    })
+    .required(),
+};

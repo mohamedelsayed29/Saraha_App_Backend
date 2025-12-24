@@ -64,6 +64,8 @@ export const userSchema =new Schema({
 
     confirm_email: { type: Boolean, default: false },
 
+    changeCredentialsTime: { type: Date},
+
     photo: String,
     provider:{
         type:String,
