@@ -12,7 +12,7 @@ export const fileValidation = {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     ]
 }
-export const localFileUploade = ({customPath = "general" , validation = []})=>{
+export const localFileUpload = ({customPath = "general" , validation = []})=>{
     let basePath = `uploads/${customPath}`
     
     const storage = multer.diskStorage({

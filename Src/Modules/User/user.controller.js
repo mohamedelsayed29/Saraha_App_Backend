@@ -14,7 +14,8 @@ import {
     updatePasswordValidation,
     updateProfileValidation
 } from "./user.validation.js";
-import { fileValidation, localFileUploade } from "../../Utils/multer/local.multer.js";
+import { fileValidation, localFileUpload } from "../../Utils/multer/local.multer.js";
+import { cloudFileUpload } from "../../Utils/multer/cloud.multer.js";
 
 const router = Router();
 router.get('/get-user-profile',
@@ -65,15 +66,17 @@ router.patch('/update-password',
 
 router.patch('/update-profile-image',
     authentication({tokenType:tokenTypeEnum.access}),
-    localFileUploade({customPath:"UserImage" , validation:fileValidation.image}).single("profileImage"),
-    validation(profileImageValidation),
+    // localFileUploade({customPath:"UserImage" , validation:fileValidation.image}).single("profileImage"),
+    // validation(profileImageValidation),
+    cloudFileUpload({validation:[...fileValidation.image]}).single("image"),
     userService.updateProfileImage
 );
 
 router.patch('/update-cover-images',
     authentication({tokenType:tokenTypeEnum.access}),
-    localFileUploade({customPath:"UserCoverImages" , validation:fileValidation.image}).array("coverImages",5),
-    validation(coverImageValidation),
+    // localFileUpload({customPath:"UserCoverImages" , validation:fileValidation.image}).array("coverImages",5),
+    // validation(coverImageValidation),
+    cloudFileUpload({validation:[...fileValidation.image]}).array("images",5),
     userService.updateCoverImages
 );
 export default router; 

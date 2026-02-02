@@ -70,6 +70,11 @@ export const userSchema =new Schema({
 
     cover_Images: [String],
 
+    profile_cloud_Image:{public_id:String , secure_url:String},
+
+    cover_cloud_Images:[{public_id:String , secure_url:String}],
+
+
     provider:{
         type:String,
         enum:Object.values(providers),

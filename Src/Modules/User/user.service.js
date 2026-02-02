@@ -6,6 +6,8 @@ import { compare } from "../../Utils/Hashing/hash.utils.js";
 import { hash } from "../../Utils/Hashing/hash.utils.js";
 import { logoutEnum } from "../../Utils/Token/token.utils.js";
 import { TokenModel } from "../../DB/Models/token.model.js";
+import { cloudinaryConfig } from "../../Utils/multer/cloudinary.js";
+import { destroyToCloudinary, uploadToCloudinary } from "../../Utils/multer/cloud.multer.js";
 
 export const getUserProfile = async(req ,res , next)=>{
 
@@ -216,13 +218,19 @@ export const updatePassword = async(req,res,next)=>{
 
 export const updateProfileImage = async(req,res,next)=>{
 
+    const {secure_url , public_id} = await uploadToCloudinary({filePath:req.file.path , folder:`Saraha-App/Users/${req.user._id}`})
+    
     const user = await dbService.findOneAndUpdate({
         model:UserModel,
         filter:{_id:req.user._id},
         data:{
-            profile_Image:req.file.finalPath
+            profile_cloud_Image:{secure_url , public_id}
         }
     })
+
+    if(req.user.profile_cloud_Image?.public_id){
+        await destroyToCloudinary({filePath:req.user.profile_cloud_Image.public_id} )
+    }
 
     return successResponse({
         res,
@@ -233,13 +241,27 @@ export const updateProfileImage = async(req,res,next)=>{
 };
 
 export const updateCoverImages = async(req,res,next)=>{
+
+    const attachments = [];
+    const oldImages = req.user.cover_cloud_Images || [];
+
+    for(const file of req.files){
+        const {secure_url , public_id} = await uploadToCloudinary({filePath:file.path , folder:`Saraha-App/Users/${req.user._id}`})
+        attachments.push({secure_url , public_id})
+    }
+
     const user = await dbService.findOneAndUpdate({
         model:UserModel,
         filter:{_id:req.user._id},
         data:{
-            cover_Images:req.files.map(file => file.finalPath)
+            cover_cloud_Images:attachments 
         }
     })
+
+    for (const image of oldImages) {
+        await destroyToCloudinary({ filePath:image.public_id });
+    }
+
 
     return successResponse({
         res,
