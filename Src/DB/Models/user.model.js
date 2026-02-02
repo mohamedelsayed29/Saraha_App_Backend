@@ -64,9 +64,12 @@ export const userSchema =new Schema({
 
     confirm_email: { type: Boolean, default: false },
 
-    changeCredentialsTime: { type: Date},
+    changeCredentialsTime: { type: Date}, 
 
-    photo: String,
+    profile_Image: String,
+
+    cover_Images: [String],
+
     provider:{
         type:String,
         enum:Object.values(providers),

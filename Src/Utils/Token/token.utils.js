@@ -13,7 +13,7 @@ export const logoutEnum = {
     stayloggedIn:"stayloggedIn"
 };
 
-export const signToken = ({payload = {} , signature , options = {expiresIn :"1d"}})=>{
+export const signToken = ({payload = {} , signature , options = {expiresIn :process.env.ACCESS_TOKEN_EXPIRES_IN}})=>{
     return jwt.sign(payload,signature,options)
 }
 
@@ -56,7 +56,6 @@ export const getNewLoginCredentials = async (user) =>{
         options:{
             issuer:"Saraha App",
             subject:"Authentcation",
-            expiresIn: "1d",
             jwtid
         }
     })
@@ -66,7 +65,7 @@ export const getNewLoginCredentials = async (user) =>{
         options:{
         issuer:"Saraha App",
         subject:"Authentcation",
-        expiresIn: "7d",
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
         jwtid
     }})
     return {accessToken,refreshToken}

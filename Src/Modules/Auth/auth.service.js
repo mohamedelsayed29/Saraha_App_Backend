@@ -14,7 +14,7 @@ export const signup = async (req, res, next) => {
   const { first_name, last_name, password, email, gender, phone , role } = req.body;
 
   if (await findOne({ model: UserModel, filter: { email } })) 
-    return next(new Error("Email already Exists", { cause: 409 }));
+    return next(new Error("a", { cause: 409 }));
 
   const hashedPassword = await hash({plainText: password});
   const encryptionPhone = encrypt(phone);
@@ -193,23 +193,25 @@ export const confirmEmail = async (req,res,next)=>{
   });
 };
 
-async function verifyGoogleAccount({idToken}){
-    const client = new OAuth2Client();
+async function verfiyGoogleAccount({ idToken }) {
+  const client = new OAuth2Client();
+  const ticket = await client.verifyIdToken({
+    idToken,
+    audience: process.env.CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  return payload;
+}
 
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: process.env.CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-
-    return payload;
-};
-
-export const loginWithGamil = async (req, res, next) => {
+export const loginWithGmail = async (req, res, next) => {
   const { idToken } = req.body;
+
   const { email, email_verified, picture, given_name, family_name } =
-    await verifyGoogleAccount({ idToken });
-  if (!email_verified) return next(new Error("Email Is Not Verifyed", { cause: 401 }));
+    await verfiyGoogleAccount({ idToken });
+
+  if (!email_verified) {
+    return next(new Error("Email is Not Verfied", { cause: 401 }));
+  }
 
   const user = await dbService.findOne({
     model: UserModel,
@@ -217,14 +219,28 @@ export const loginWithGamil = async (req, res, next) => {
   });
 
   if (user) {
-    if (user.provider === providers.google) {
-        const newCredentials = await getNewLoginCredentials(user)
+    if (user.provider === providerEnum.google) {
+      const access_token = generateToken({
+        payload: { _id: user._id },
+        options: {
+          issuer: "SarahaApp",
+          subject: "Authentication",
+        },
+      });
+
+      const refresh_token = generateToken({
+        payload: { _id: user._id },
+        options: {
+          issuer: "SarahaApp",
+          subject: "Authentication",
+        },
+      });
 
       return successResponse({
         res,
         statusCode: 200,
-        message: "Login successfully",
-        data: { newCredentials },
+        message: "Login Successfully",
+        data: { access_token, refresh_token },
       });
     }
   }
@@ -237,18 +253,33 @@ export const loginWithGamil = async (req, res, next) => {
         first_name: given_name,
         last_name: family_name,
         photo: picture,
-        provider: providers.google,
+        provider: providerEnum.google,
         confirm_email: Date.now(),
       },
     ],
   });
-      const newCredentials = await getNewLoginCredentials(user)
+
+  const access_token = generateToken({
+    payload: { _id: newUser._id },
+    options: {
+      issuer: "SarahaApp",
+      subject: "Authentication",
+    },
+  });
+
+  const refresh_token = generateToken({
+    payload: { _id: newUser._id },
+    options: {
+      issuer: "SarahaApp",
+      subject: "Authentication",
+    },
+  });
 
   return successResponse({
     res,
     statusCode: 201,
-    message: "User Created successfully",
-    data: {newCredentials},
+    message: "User Created Successfully",
+    data: { access_token, refresh_token },
   });
 };
 

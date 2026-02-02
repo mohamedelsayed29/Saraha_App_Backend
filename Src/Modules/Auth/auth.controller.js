@@ -20,7 +20,7 @@ router.post('/login',validation(loginValidation),authService.login);
 
 router.post('/logout',validation(logoutValidation),authentication({tokenType:tokenTypeEnum.access }),authService.logout);
 
-router.post('/social-login',validation(socialLoginValidation),authService.loginWithGamil);
+router.post('/social-login',authService.loginWithGmail)
 
 router.get('/refresh-token',authentication({tokenType:tokenTypeEnum.refresh }),authService.refreshToken);
 

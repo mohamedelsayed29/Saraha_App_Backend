@@ -1,6 +1,7 @@
 import joi from "joi"
 import { generalFields } from "../../Middlewares/validation.middleware.js"
 import { logoutEnum } from "../../Utils/Token/token.utils.js"
+import { fileValidation } from "../../Utils/multer/local.multer.js";
 
 export const shareProfileValidation ={
     params:joi.object({
@@ -44,3 +45,32 @@ export const updatePasswordValidation ={
         flag:joi.string().valid(...Object.values(logoutEnum)).default(logoutEnum.stayloggedIn)
     })
 };
+export const profileImageValidation ={
+    file: joi.object({
+        fieldname: generalFields.file.fieldname.required(),
+        originalname: generalFields.file.originalname.required(),
+        encoding: generalFields.file.encoding.required(),
+        mimetype: generalFields.file.mimetype.valid(...fileValidation.image).required(),
+        size: generalFields.file.size.max(5 * 1024 * 1024).required(),
+        destination: generalFields.file.destination.required(),
+        filename: generalFields.file.filename.required(),
+        path: generalFields.file.path.required(),
+        finalPath: generalFields.file.finalPath.required()
+    }).required()
+};
+export const coverImageValidation = {
+    files: joi.array().items(
+    joi.object({
+        fieldname: generalFields.file.fieldname.required(),
+        originalname: generalFields.file.originalname.required(),
+        encoding: generalFields.file.encoding.required(),
+        mimetype: generalFields.file.mimetype.valid(...fileValidation.image).required(),
+        size: generalFields.file.size.max(5 * 1024 * 1024).required(),
+        destination: generalFields.file.destination.required(),
+        filename: generalFields.file.filename.required(),
+        path: generalFields.file.path.required(),
+        finalPath: generalFields.file.finalPath.required()
+    }).required()
+    ).min(1).required()
+};
+

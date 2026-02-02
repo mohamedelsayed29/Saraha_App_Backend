@@ -26,7 +26,7 @@ export const shareProfile = async(req,res,next)=>{
         return next(new Error("User email is not verified", { cause: 403 }));
     }
     return user ? successResponse({
-        res,
+        res, 
         statusCode:200,
         message:"User profile fetched successfully",
         data:{user}
@@ -213,3 +213,38 @@ export const updatePassword = async(req,res,next)=>{
     })
     : next(new Error("Failed to update password",{cause:400}))
 };
+
+export const updateProfileImage = async(req,res,next)=>{
+
+    const user = await dbService.findOneAndUpdate({
+        model:UserModel,
+        filter:{_id:req.user._id},
+        data:{
+            profile_Image:req.file.finalPath
+        }
+    })
+
+    return successResponse({
+        res,
+        statusCode:200,
+        message:"Profile Image Updated Successfully",
+        data:{user}
+    })
+};
+
+export const updateCoverImages = async(req,res,next)=>{
+    const user = await dbService.findOneAndUpdate({
+        model:UserModel,
+        filter:{_id:req.user._id},
+        data:{
+            cover_Images:req.files.map(file => file.finalPath)
+        }
+    })
+
+    return successResponse({
+        res,
+        statusCode:200,
+        message:"Cover Images Updated Successfully",
+        data:{user}
+    })
+}

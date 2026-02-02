@@ -4,15 +4,17 @@ import { authentication, authorization, tokenTypeEnum } from "../../Middlewares/
 import { endpoints } from "./user.authorization.js";
 import { validation } from "../../Middlewares/validation.middleware.js";
 import { 
+    coverImageValidation,
     freezeAccountValidation,
     hardDeleteAccountValidation,
+    profileImageValidation,
     restoreFreezeAccountAdminValidation,
     restoreFreezeAccountUserValidation,
     shareProfileValidation,
     updatePasswordValidation,
     updateProfileValidation
 } from "./user.validation.js";
-import { auth } from "google-auth-library";
+import { fileValidation, localFileUploade } from "../../Utils/multer/local.multer.js";
 
 const router = Router();
 router.get('/get-user-profile',
@@ -60,4 +62,18 @@ router.patch('/update-password',
     authorization({accessRoles:endpoints.updatePassword}),
     userService.updatePassword
 );
-export default router;
+
+router.patch('/update-profile-image',
+    authentication({tokenType:tokenTypeEnum.access}),
+    localFileUploade({customPath:"UserImage" , validation:fileValidation.image}).single("profileImage"),
+    validation(profileImageValidation),
+    userService.updateProfileImage
+);
+
+router.patch('/update-cover-images',
+    authentication({tokenType:tokenTypeEnum.access}),
+    localFileUploade({customPath:"UserCoverImages" , validation:fileValidation.image}).array("coverImages",5),
+    validation(coverImageValidation),
+    userService.updateCoverImages
+);
+export default router; 

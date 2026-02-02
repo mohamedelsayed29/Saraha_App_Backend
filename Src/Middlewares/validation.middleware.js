@@ -115,7 +115,19 @@ export const generalFields = {
             "string.length": "OTP must be exactly 6 digits",
             "string.pattern.base": "OTP must contain only numbers",
             "any.required": "OTP is required"
-    })
+    }),
+    file:{
+        fieldname: joi.string(),
+        originalname: joi.string(),
+        encoding: joi.string(),
+        mimetype: joi.string(),
+        size: joi.number(),
+        destination: joi.string(),
+        filename: joi.string(),
+        path: joi.string(),
+        finalPath: joi.string()
+
+    }
 };
 
 export const validation = (Schema) => {

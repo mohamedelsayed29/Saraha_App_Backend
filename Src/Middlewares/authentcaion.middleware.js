@@ -31,7 +31,7 @@ const decodedToken = async({authorization,tokenType = tokenTypeEnum.access,next}
         (await dbService.findOne({
         model:TokenModel,
         filter:{
-            jti: decoded.jti,
+            jti: decoded.jti,  
         }
     }) )){
         return next (new Error("Token Revoked" , {cause:401}))
@@ -47,7 +47,7 @@ const decodedToken = async({authorization,tokenType = tokenTypeEnum.access,next}
         return next (new Error("Credentials Changed, Please Login Again" , {cause:401}))
     }
     return { user , decoded};
-}
+};
 
 export const authentication = ({tokenType=tokenTypeEnum.access})=>{
     return async(req , res ,next)=>{
@@ -60,13 +60,12 @@ export const authentication = ({tokenType=tokenTypeEnum.access})=>{
         req.decoded = decoded;
         return next()
     }
-}
+};
 
 export const authorization =({accessRoles=[] })=>{
     return async(req,res,next)=>{
         if(!accessRoles.includes(req.user.role))
-            return next(new Error("Unauthorized",{cause:403}))
-
+            return next(new Error("You Don't Have Access To This Route" , {cause:403}))
         return next()
     }
-}
+};
