@@ -64,7 +64,7 @@ export const userSchema =new Schema({
 
     confirm_email: { type: Boolean, default: false },
 
-    changeCredentialsTime: { type: Date}, 
+    changeCredentialsTime: {type: Date}, 
 
     profile_Image: String,
 
@@ -96,6 +96,11 @@ export const userSchema =new Schema({
     restored_by:{type:mongoose.Schema.Types.ObjectId , ref:"User"}
 
 },
-{timestamps:true}
+    {timestamps:true , toJSON:{virtuals:true} , toObject:{virtuals:true}}
 ); 
+userSchema.virtual("messages",{
+    localField:"_id",
+    foreignField:"reciever_id",
+    ref:"Message"
+})
 export const UserModel = mongoose.models.User || mongoose.model("User", userSchema);

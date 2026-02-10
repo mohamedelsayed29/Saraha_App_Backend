@@ -6,16 +6,23 @@ import { compare } from "../../Utils/Hashing/hash.utils.js";
 import { hash } from "../../Utils/Hashing/hash.utils.js";
 import { logoutEnum } from "../../Utils/Token/token.utils.js";
 import { TokenModel } from "../../DB/Models/token.model.js";
-import { cloudinaryConfig } from "../../Utils/multer/cloudinary.js";
 import { destroyToCloudinary, uploadToCloudinary } from "../../Utils/multer/cloud.multer.js";
 
 export const getUserProfile = async(req ,res , next)=>{
 
     req.user.phone = decrypt(req.user.phone)
     
+    const user = await dbService.findById({
+        model:UserModel,
+        id:req.user._id,
+        populate:[
+            {  path:"messages", select:"content attatchments sender_id createdAt" , populate:{path:"sender_id" , select:"name profile_Image"}}
+        ]
+    });
+
     return successResponse({res , statusCode:200 ,
         message:"User profile fetched successfully" , 
-        data:{user:req.user}})
+        data:{user}})
 };
 
 export const shareProfile = async(req,res,next)=>{
@@ -261,7 +268,6 @@ export const updateCoverImages = async(req,res,next)=>{
     for (const image of oldImages) {
         await destroyToCloudinary({ filePath:image.public_id });
     }
-
 
     return successResponse({
         res,

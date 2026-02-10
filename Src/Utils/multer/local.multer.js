@@ -42,4 +42,4 @@ export const localFileUpload = ({customPath = "general" , validation = []})=>{
         fileFilter,
         storage,
     })
-} 
+};
