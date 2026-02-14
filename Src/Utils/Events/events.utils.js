@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
-import { emailSubject, sendEmail } from "../Email/sendEmail.utils.js";
-import { template } from "../../Templates/Email_OTP.js";
 import { login_successfuly_template } from "../../Templates/Login_Successfuly_Email.js";
+import { template } from "../../Templates/Email_OTP.js";
+import { emailSubject, sendEmail } from "../Email/sendEmail.utils.js";
 
 export const emailEvent = new EventEmitter();
 
