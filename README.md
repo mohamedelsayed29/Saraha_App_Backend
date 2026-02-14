@@ -70,6 +70,7 @@ Saraha (meaning "honesty" in Arabic) is an anonymous messaging application that 
 - **Unique ID Generation:** nanoid v5.1.6
 - **CORS:** cors v2.8.5
 - **joi**   joi v18.0.2
+- **morgan** morgan v1.10.1
 
 
 ## Getting Started

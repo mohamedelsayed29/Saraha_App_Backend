@@ -7,6 +7,10 @@ import cors from 'cors'
 import { startDeleteUnactivatedUsersJob } from './Utils/cron/deleteUnactivatedUser.utils.js'
 import path from 'node:path'
 import * as dotenv from "dotenv"
+import { attachmentRoutingLogger } from './Utils/loggers/logger.js'
+import { corsOptions } from './Utils/cors/cors.js'
+import helmet from 'helmet'
+import { limiter } from './Utils/express-rate-limit.js'
 
 dotenv.config({path:path.join('./Src/config/.env.dev')})
 
@@ -14,9 +18,14 @@ dotenv.config({path:path.join('./Src/config/.env.dev')})
 const bootstrap = async (app,express) =>{
     const port = process.env.PORT
     app.use(express.json())
+    app.use(helmet())
+    app.use(limiter)
+    attachmentRoutingLogger(app , "/api/messages" , messageRouter , "messagesLogs.log")
+    attachmentRoutingLogger(app , "/api/users" , userRouter , "usersLogs.log")
+    attachmentRoutingLogger(app , "/api/auth" , authRouter , "authLogs.log")
     await connectDB()
+    app.use(cors(corsOptions()))
     startDeleteUnactivatedUsersJob()
-    app.use(cors())
     app.use('/uploads',express.static(path.resolve('./Src/uploads')))
     app.use('/api/auth',authRouter)
     app.use('/api/users',userRouter)

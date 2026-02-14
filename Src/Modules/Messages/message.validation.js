@@ -27,4 +27,4 @@ export const getMessageVakidation = {
     params: joi.object({
         userId: generalFields.id.required()
     }).required()
-}
+} 
