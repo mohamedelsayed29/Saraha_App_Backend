@@ -70,18 +70,17 @@ Saraha (meaning "honesty" in Arabic) is an anonymous messaging application that 
 - **Unique ID Generation:** nanoid v5.1.6
 - **CORS:** cors v2.8.5
 - **joi**   joi v18.0.2
-- **morgan** morgan v1.10.1
 
 
 ## Getting Started
 
 ### Prerequisites
 
-Before running this project, ensure you have the following installed:
+Ensure you have the following installed:
 
-- Node.js (v14.x or higher)
-- npm (v6.x or higher)
-- MongoDB (v4.x or higher) - Local installation or MongoDB Atlas account
+- **Node.js** (v14.x or higher)
+- **npm** (v6.x or higher)
+- **MongoDB** (v4.x or higher) or MongoDB Atlas account
 
 ### Installation
 
@@ -96,75 +95,125 @@ Before running this project, ensure you have the following installed:
    npm install
    ```
 
-3. **Set up environment variables**
+3. **Configure environment variables**
    
-   Create a `.env` file in the root directory (see [Environment Variables](#environment-variables) section below)
+   Create a `.env` file in the root directory:
+   ```env
+   # Server Configuration
+   PORT=3000
+   NODE_ENV=development
+   BASE_URL=http://localhost:3000
 
-4. **Verify MongoDB connection**
+   # Database
+   MONGODB_URI=mongodb://localhost:27017/saraha_db
+   # Or MongoDB Atlas:
+   # MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/saraha_db
+
+   # JWT Configuration
+   JWT_SECRET=your_super_secret_jwt_key_here
+   JWT_EXPIRE=7d
+   REFRESH_TOKEN_SECRET=your_refresh_token_secret_here
+   REFRESH_TOKEN_EXPIRE=30d
+
+   # Email Service (Gmail example)
+   EMAIL_SERVICE=gmail
+   EMAIL_USER=your_email@gmail.com
+   EMAIL_PASSWORD=your_app_specific_password
+
+   # Google OAuth (Optional)
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+   # Security
+   BCRYPT_SALT_ROUNDS=10
+
+   # Cloudinary (for file uploads)
+   CLOUD_NAME=your_cloudinary_cloud_name
+   API_KEY=your_cloudinary_api_key
+   API_SECRET=your_cloudinary_api_secret
+   ```
+
+4. **Start the server**
    
-   Ensure MongoDB is running locally or your MongoDB Atlas connection string is correct
+   **Development mode:**
+   ```bash
+   npm run dev
+   ```
+   
+   **Production mode:**
+   ```bash
+   npm start
+   ```
 
-### Environment Variables
+5. **Verify the server is running**
+   ```bash
+   curl http://localhost:3000
+   ```
 
-Create a `.env` file in the root directory with the following variables:
+---
 
-```env
-# Server Configuration
-PORT=3000
-NODE_ENV=development
+## 📁 Project Structure
 
-# Database Configuration
-MONGODB_URI=mongodb://localhost:27017/saraha_db
-# OR for MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/saraha_db
-
-# JWT Configuration
-JWT_SECRET=your_jwt_secret_key_here
-JWT_EXPIRE=7d
-
-# Email Configuration (for email verification)
-EMAIL_SERVICE=gmail
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASSWORD=your_app_specific_password
-
-# Application Configuration
-BASE_URL=http://localhost:3000
-
-# Security
-BCRYPT_SALT_ROUNDS=10
+```
+Saraha_App_Backend/
+│
+├── Src/
+│   ├── modules/              # Feature modules
+│   │   ├── auth/            # Authentication logic
+│   │   │   ├── auth.controller.js
+│   │   │   ├── auth.routes.js
+│   │   │   ├── auth.service.js
+│   │   │   └── auth.validation.js
+│   │   │
+│   │   ├── user/            # User management
+│   │   │   ├── user.controller.js
+│   │   │   ├── user.routes.js
+│   │   │   ├── user.model.js
+│   │   │   └── user.validation.js
+│   │   │
+│   │   └── message/         # Message handling
+│   │       ├── message.controller.js
+│   │       ├── message.routes.js
+│   │       ├── message.model.js
+│   │       └── message.validation.js
+│   │
+│   ├── middleware/          # Custom middleware
+│   │   ├── authentication.js
+│   │   ├── authorization.js
+│   │   ├── validation.js
+│   │   ├── errorHandler.js
+│   │   └── fileUpload.js
+│   │
+│   ├── utils/               # Utility functions
+│   │   ├── generateToken.js
+│   │   ├── sendEmail.js
+│   │   ├── apiResponse.js
+│   │   └── constants.js
+│   │
+│   └── config/              # Configuration
+│       ├── database.js
+│       └── cloudinary.js
+│
+├── .env                     # Environment variables (not committed)
+├── .gitignore
+├── index.js                 # Application entry point
+├── package.json
+└── README.md
 ```
 
-> **Note:** Never commit your `.env` file to version control. Make sure it's listed in `.gitignore`.
+---
 
-### Running the Application
-
-#### Development Mode
-
-```bash
-npm run dev
-```
-
-The server will start on `http://localhost:3000` (or your configured PORT) with hot-reloading enabled.
-
-#### Production Mode
-
-```bash
-npm start
-```
-
-## API Documentation
+## 📚 API Documentation
 
 ### Base URL
 ```
-http://localhost:3000
+http://localhost:3000/api
 ```
-
-### API Routes
-All API endpoints are prefixed with `/api`
 
 ### Authentication Endpoints
 
-#### Register New User (Sign Up)
+#### 📝 Register User
+
 ```http
 POST /api/auth/signup
 Content-Type: application/json
@@ -172,8 +221,8 @@ Content-Type: application/json
 {
   "first_name": "John",
   "last_name": "Doe",
-  "email": "john@example.com",
-  "password": "P@ssw0rd123!",
+  "email": "john.doe@example.com",
+  "password": "SecureP@ss123",
   "phone": "01234567890",
   "gender": "male",
   "role": "USER"
@@ -184,47 +233,23 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Account created successfully. Please check your email to verify your account.",
+  "message": "Account created successfully. Please verify your email.",
   "data": {
-    "user_id": "user_id_here"
+    "user_id": "507f1f77bcf86cd799439011"
   }
 }
 ```
 
-#### Login
-```http
-POST /api/auth/login
-Content-Type: application/json
+---
 
-{
-  "email": "john@example.com",
-  "password": "P@ssw0rd123!"
-}
-```
+#### ✅ Confirm Email
 
-**Response:**
-```json
-{
-  "success": true,
-  "token": "jwt_access_token_here",
-  "refresh_token": "jwt_refresh_token_here",
-  "user": {
-    "id": "user_id",
-    "first_name": "John",
-    "last_name": "Doe",
-    "email": "john@example.com",
-    "role": "USER"
-  }
-}
-```
-
-#### Confirm Email (OTP Verification)
 ```http
 PATCH /api/auth/confirm-email
 Content-Type: application/json
 
 {
-  "email": "john@example.com",
+  "email": "john.doe@example.com",
   "otp": "123456"
 }
 ```
@@ -233,11 +258,47 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Email confirmed successfully"
+  "message": "Email verified successfully"
 }
 ```
 
-#### Refresh Access Token
+---
+
+#### 🔑 Login
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecureP@ss123"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "507f1f77bcf86cd799439011",
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john.doe@example.com",
+      "role": "USER"
+    }
+  }
+}
+```
+
+---
+
+#### 🔄 Refresh Token
+
 ```http
 GET /api/auth/refresh-token
 Authorization: User {refresh_token}
@@ -247,13 +308,18 @@ Authorization: User {refresh_token}
 ```json
 {
   "success": true,
-  "access_token": "new_jwt_access_token_here"
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
 }
 ```
 
-### User Profile Endpoints
+---
 
-#### Get User Profile
+### User Endpoints
+
+#### 👤 Get User Profile
+
 ```http
 GET /api/users/get-user-profile
 Authorization: Admin {access_token}
@@ -264,187 +330,290 @@ Authorization: Admin {access_token}
 {
   "success": true,
   "data": {
-    "id": "user_id",
+    "id": "507f1f77bcf86cd799439011",
     "first_name": "John",
     "last_name": "Doe",
-    "email": "john@example.com",
+    "email": "john.doe@example.com",
     "phone": "01234567890",
     "gender": "male",
     "role": "USER",
-    "is_email_confirmed": true
+    "is_email_confirmed": true,
+    "created_at": "2025-01-15T10:30:00.000Z"
   }
 }
 ```
 
+---
+
 ### Message Endpoints
 
-#### Send Anonymous Message
+#### 💌 Send Anonymous Message
+
 ```http
-POST /api/messages/send/:userId
-Content-Type: application/json
+POST /api/messages/:receiver_id/sender
+Authorization: User {access_token}
+Content-Type: multipart/form-data
 
 {
-  "content": "Your anonymous message here"
+  "content": "Your honest feedback message here",
+  "attachments": [file1, file2]  // Optional (max 3 files)
 }
 ```
 
-#### Get Received Messages
-```http
-GET /api/messages/received
-Authorization: User {access_token}
-```
-
-#### Delete Message
-```http
-DELETE /api/messages/:messageId
-Authorization: User {access_token}
-```
-
-### Response Format
-
-All API responses follow this structure:
-
-**Success Response:**
+**Response:**
 ```json
 {
   "success": true,
-  "message": "Operation successful",
-  "data": {}
+  "message": "Message sent successfully",
+  "data": {
+    "message_id": "507f191e810c19729de860ea"
+  }
 }
 ```
 
-**Error Response:**
+---
+
+#### 📬 Get Received Messages
+
+```http
+GET /api/messages/:userId/get-messages
+Authorization: User {access_token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "messages": [
+      {
+        "id": "507f191e810c19729de860ea",
+        "content": "Great job on the project!",
+        "attachments": [],
+        "created_at": "2025-02-10T14:20:00.000Z"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "limit": 20
+  }
+}
+```
+
+---
+
+### Error Responses
+
+All errors follow this format:
+
 ```json
 {
   "success": false,
   "message": "Error description",
-  "errors": []
+  "errors": [
+    {
+      "field": "email",
+      "message": "Email is required"
+    }
+  ]
 }
 ```
 
-### Status Codes
+### HTTP Status Codes
 
-- `200` - OK
-- `201` - Created
-- `400` - Bad Request
-- `401` - Unauthorized
-- `403` - Forbidden
-- `404` - Not Found
-- `500` - Internal Server Error
+| Code | Description |
+|------|-------------|
+| 200 | OK - Request successful |
+| 201 | Created - Resource created |
+| 400 | Bad Request - Invalid input |
+| 401 | Unauthorized - Authentication required |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - Resource doesn't exist |
+| 409 | Conflict - Resource already exists |
+| 500 | Internal Server Error |
 
-## Project Structure
+---
 
+## 📮 Postman Collection
+
+Test all endpoints easily with our Postman collection:
+
+**[📥 Download Postman Collection](https://mohamedelsayed-7560914.postman.co/workspace/1b7a1fd1-ca1a-447a-89f2-3a7a335f60cd/collection/45782247-0ec609d7-afc2-4f6b-ad49-641e1c679a5e?action=share&source=collection_link&creator=45782247)**
+
+### Collection Includes:
+
+- ✅ All authentication flows
+- ✅ User management endpoints
+- ✅ Message operations
+- ✅ Pre-configured environment variables
+- ✅ Example requests and responses
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Node.js** | v14+ | Runtime environment |
+| **Express.js** | v5.1.0 | Web framework |
+| **MongoDB** | v4+ | Database |
+| **Mongoose** | v9.0.0 | ODM for MongoDB |
+| **JWT** | v9.0.2 | Authentication |
+| **bcryptjs** | v3.0.3 | Password hashing |
+| **crypto-js** | v4.2.0 | Data encryption |
+| **Joi** | v18.0.2 | Input validation |
+| **Nodemailer** | v7.0.11 | Email service |
+| **Cloudinary** | - | File storage |
+| **nanoid** | v5.1.6 | Unique ID generation |
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
 ```
-Saraha_App_Backend/
-│
-├── Src/                          # Source code directory
-│   ├── modules/                  # Feature-based modules
-│   │   ├── auth/                 # Authentication module
-│   │   │   ├── auth.controller.js
-│   │   │   ├── auth.routes.js
-│   │   │   └── auth.validation.js
-│   │   │
-│   │   ├── user/                 # User module
-│   │   │   ├── user.controller.js
-│   │   │   ├── user.routes.js
-│   │   │   └── user.model.js
-│   │   │
-│   │   └── message/              # Message module
-│   │       ├── message.controller.js
-│   │       ├── message.routes.js
-│   │       └── message.model.js
-│   │
-│   ├── middleware/               # Custom middleware
-│   │   ├── auth.middleware.js    # JWT authentication
-│   │   ├── error.middleware.js   # Error handling
-│   │   └── validation.middleware.js
-│   │
-│   ├── config/                   # Configuration files
-│   │   ├── database.js           # Database connection
-│   │   └── email.js              # Email configuration
-│   │
-│   └── utils/                    # Utility functions
-│       ├── generateToken.js
-│       ├── sendEmail.js
-│       └── helpers.js
-│
-├── node_modules/                 # Dependencies
-│
-├── index.js                      # Application entry point
-├── package.json                  # Project metadata and dependencies
-├── package-lock.json             # Locked versions of dependencies
-├── .env                          # Environment variables (not in repo)
-├── .gitignore                    # Git ignore file
-├── note.md                       # Development notes
-└── README.md                     # Project documentation
+
+---
+
+## 🔒 Security Best Practices
+
+This project implements:
+
+- ✅ **JWT token authentication** with short-lived access tokens
+- ✅ **Password hashing** using bcryptjs (10 rounds)
+- ✅ **Input validation** with Joi schemas
+- ✅ **SQL injection prevention** via Mongoose
+- ✅ **XSS protection** through input sanitization
+- ✅ **CORS configuration** for controlled access
+- ✅ **Rate limiting** on sensitive endpoints
+- ✅ **Environment variables** for secrets
+- ✅ **HTTPS enforcement** in production
+- ✅ **Email verification** for account activation
+
+---
+
+## 🚀 Deployment
+
+### Deploy to Heroku
+
+```bash
+# Login to Heroku
+heroku login
+
+# Create new app
+heroku create saraha-app-backend
+
+# Set environment variables
+heroku config:set MONGODB_URI=your_mongodb_uri
+heroku config:set JWT_SECRET=your_jwt_secret
+
+# Deploy
+git push heroku main
 ```
 
-### Key Directories
+### Deploy to Railway
 
-- **`Src/modules/`** - Contains feature-specific code organized by domain (auth, user, message)
-- **`Src/middleware/`** - Express middleware for authentication, validation, and error handling
-- **`Src/config/`** - Configuration files for database, email, and other services
-- **`Src/utils/`** - Reusable utility functions and helpers
+1. Connect your GitHub repository
+2. Add environment variables in Railway dashboard
+3. Deploy automatically on push
 
-## Postman Collection
+### Deploy to Render
 
-For easier API testing and integration, we provide a comprehensive Postman collection with all available endpoints, request examples, and environment variables.
+1. Connect repository
+2. Set build command: `npm install`
+3. Set start command: `npm start`
+4. Add environment variables
 
-**[Download Postman Collection](https://mohamedelsayed-7560914.postman.co/workspace/1b7a1fd1-ca1a-447a-89f2-3a7a335f60cd/collection/45782247-0ec609d7-afc2-4f6b-ad49-641e1c679a5e?action=share&source=collection_link&creator=45782247)**
+---
 
-### Collection Structure
+## 🤝 Contributing
 
-The Postman collection includes the following groups:
+Contributions make the open-source community amazing! Any contributions are **greatly appreciated**.
 
-1. **Auth** - Authentication endpoints
-   - Create Account (Sign Up)
-   - Login
-   - Confirm Email (OTP Verification)
-   - Refresh Token
-
-2. **User** - User profile management
-   - Get User Profile
-
-3. **Message** - Anonymous messaging (coming soon)
-
-### Using the Collection
-
-1. Import the collection into Postman using the link above
-2. Set up environment variables:
-   - `base_url`: Your API base URL (e.g., `http://localhost:3000`)
-3. Start with the authentication endpoints to create an account
-4. Use the returned access token for protected endpoints
-5. Set the Authorization header format: `User {access_token}` or `Admin {access_token}` depending on the role
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'feat: add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-Please ensure your code follows the existing code style and includes appropriate tests.
+### Commit Convention
 
-## License
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation changes
+- `style:` Code style changes (formatting)
+- `refactor:` Code refactoring
+- `test:` Adding tests
+- `chore:` Maintenance tasks
 
-## Contact
+---
+
+## 📝 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+## 👨‍💻 Author
 
 **Mohamed Elsayed**
 
 - GitHub: [@mohamedelsayed29](https://github.com/mohamedelsayed29)
-- Project Link: [https://github.com/mohamedelsayed29/Saraha_App_Backend](https://github.com/mohamedelsayed29/Saraha_App_Backend)
+- LinkedIn: [Connect with me](https://linkedin.com/in/mohamedelsayed29)
+- Email: mohamedelsayed@example.com
 
 ---
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-- Node.js and Express.js communities
-- MongoDB team for excellent documentation
-- All contributors who help improve this project
+- [Express.js Documentation](https://expressjs.com/)
+- [MongoDB Documentation](https://docs.mongodb.com/)
+- [JWT.io](https://jwt.io/)
+- [Postman](https://www.postman.com/)
+- All contributors who helped improve this project
 
 ---
+
+## 📊 Project Status
+
+🟢 **Active Development** - This project is actively maintained and accepting contributions.
+
+---
+
+## 🐛 Known Issues
+
+- [ ] Add WebSocket support for real-time notifications
+- [ ] Implement message read receipts
+- [ ] Add multi-language support
+
+See the [open issues](https://github.com/mohamedelsayed29/Saraha_App_Backend/issues) for a full list of proposed features and known issues.
+
+---
+
+## 📞 Support
+
+If you have any questions or need help, feel free to:
+
+- Open an [issue](https://github.com/mohamedelsayed29/Saraha_App_Backend/issues)
+- Contact via email
+- Join our community discussions
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you find it helpful!**
+
+Made with ❤️ by [Mohamed Elsayed](https://github.com/mohamedelsayed29)
+
+</div>
