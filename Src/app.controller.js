@@ -12,6 +12,7 @@ import { corsOptions } from './Utils/cors/cors.js'
 import helmet from 'helmet'
 import { limiter } from './Utils/express-rate-limit.js'
 
+
 dotenv.config({path:path.join('./Src/config/.env.dev')})
 
 
@@ -26,6 +27,11 @@ const bootstrap = async (app,express) =>{
     await connectDB()
     app.use(cors(corsOptions()))
     startDeleteUnactivatedUsersJob()
+    app.get('/' , (req,res)=>{
+        res.status(200).json({
+            message:"Welcome to Saraha API"
+        })
+    })
     app.use('/uploads',express.static(path.resolve('./Src/uploads')))
     app.use('/api/auth',authRouter)
     app.use('/api/users',userRouter)

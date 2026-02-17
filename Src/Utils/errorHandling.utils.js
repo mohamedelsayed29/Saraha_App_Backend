@@ -3,6 +3,6 @@ export const globalErrorHandler = (err,req,res,next)=>{
         return res.status(status).json({
             message:"Somsething went Wrong",
             error:err.message,
-            stack:process.env.MOOD==="DEV" ? err.stack:undefined
+            stack:process.env.MOOD==="PROD" ? err.stack:undefined
         });
 };
