@@ -1,5 +1,4 @@
 # Environment
-.env
-
+Src/config
 # Node
 node_modules/
