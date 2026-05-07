@@ -11,7 +11,7 @@ import { attachmentRoutingLogger } from './Utils/loggers/logger.js'
 import { corsOptions } from './Utils/cors/cors.js'
 import helmet from 'helmet'
 import { limiter } from './Utils/express-rate-limit.js'
-
+import morgan from 'morgan'
 
 dotenv.config({path:path.join('./Src/config/.env.dev')})
 
@@ -21,6 +21,7 @@ const bootstrap = async (app,express) =>{
     app.use(express.json())
     app.use(helmet())
     app.use(limiter)
+    app.use(morgan("common"))
     attachmentRoutingLogger(app , "/api/messages" , messageRouter , "messagesLogs.log")
     attachmentRoutingLogger(app , "/api/users" , userRouter , "usersLogs.log")
     attachmentRoutingLogger(app , "/api/auth" , authRouter , "authLogs.log")
